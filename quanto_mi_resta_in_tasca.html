@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QUANTO MI RESTA IN TASCA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Caveat', cursive;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+      text-align: center;
+      background-color: #0f3d3e;
+      color: #ffffff;
+      font-size: 22px;
+    }
+    input {
+      padding: 12px;
+      font-size: 26px;
+      width: 60%;
+      margin: 10px 0 20px;
+      border-radius: 8px;
+      border: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+    button {
+      padding: 14px;
+      font-size: 26px;
+      width: 60%;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      font-family: 'Caveat', cursive;
+    }
+    .result {
+      background: #1c585a;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: left;
+      font-size: 22px;
+    }
+    .result-title {
+      text-align: center;
+      font-weight: bold;
+      font-size: 24px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .half-button {
+      background-color: #d9534f;
+      color: white;
+      font-style: italic;
+      font-size: 26px;
+      font-weight: 400;
+      border: none;
+      cursor: pointer;
+      margin: 15px auto 0 auto;
+      padding: 14px;
+      border-radius: 8px;
+      display: block;
+      width: 60%;
+    }
+    .half-result {
+      font-size: 30px;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+    .bold-value {
+      font-weight: bold;
+      font-size: 32px;
+      display: inline-block;
+      margin: 4px 0;
+    }
+    h2 {
+      margin-bottom: 30px;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 28px;
+    }
+  </style>
+  <script>
+    let lastResult = null;
+
+    function formatEuro(value) {
+      return `<span class="bold-value">${value.toLocaleString("it-IT", { style: "currency", currency: "EUR" })}</span>`;
+    }
+
+    function formatInput(e) {
+      let val = e.target.value.replace(/\D/g, "");
+      if (val.length < 3) val = val.padStart(3, '0');
+      let intPart = val.slice(0, val.length - 2);
+      let decPart = val.slice(-2);
+      let formatted = parseFloat(intPart + '.' + decPart).toLocaleString("it-IT", { minimumFractionDigits: 2 });
+      e.target.value = formatted;
+    }
+
+    function calcola() {
+      const lordoInput = document.getElementById("lordo").value.replace(/\./g, "").replace(",", ".");
+      const lordo = parseFloat(lordoInput);
+
+      if (isNaN(lordo)) {
+        alert("Inserisci un importo valido.");
+        return;
+      }
+
+      const imponibileNettoCassa = lordo / 1.04;
+      const base78 = imponibileNettoCassa * 0.78;
+      const flatTax = base78 * 0.15;
+      const ventiduePercento = imponibileNettoCassa * 0.22;
+      let incassoNetto = base78 - flatTax + ventiduePercento;
+
+      lastResult = incassoNetto;
+
+      document.getElementById("risultato").innerHTML = `
+        <div class="result">
+          <div class="result-title">RISULTATO</div>
+          Imponibile al netto della cassa: ${formatEuro(imponibileNettoCassa)}<br>
+          Imponibile (78%): ${formatEuro(base78)}<br>
+          Flat Tax (15%): ${formatEuro(flatTax)}<br>
+          <strong>Incasso Netto Finale: ${formatEuro(incassoNetto)}</strong><br>
+          <button class="half-button" onclick="dividiPerDue()">un mezzo</button>
+        </div>`;
+    }
+
+    function dividiPerDue() {
+      if (lastResult !== null) {
+        const metà = lastResult / 2;
+        const extra = document.createElement("div");
+        extra.classList.add("half-result");
+        extra.innerHTML = `½ Incasso Netto: <span class="bold-value">${metà.toLocaleString("it-IT", { style: "currency", currency: "EUR" })}</span>`;
+        document.getElementById("risultato").appendChild(extra);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const input = document.getElementById("lordo");
+      input.addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          calcola();
+        }
+      });
+      input.addEventListener("input", formatInput);
+    });
+  </script>
+</head>
+<body>
+  <h2>QUANTO MI RESTA IN TASCA</h2>
+
+  <label for="lordo">IMPORTO</label><br>
+  <input type="text" id="lordo">
+
+  <button onclick="calcola()">Calcola</button>
+
+  <div id="risultato"></div>
+</body>
+</html>
